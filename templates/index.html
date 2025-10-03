@@ -27,9 +27,11 @@
         <h2>{{ post['title'] }}</h2>
     </a>
     <span class="badge badge-primary">{{ post['created'] }}</span>
+    {% if request.cookies.get('token') %}
     <a href="{{ url_for('edit', id=post['id']) }}">
         <span class="badge badge-warning">编辑</span>
     </a>
+    {% endif %}
     <hr>
     {% endfor %}
 {% endblock %}

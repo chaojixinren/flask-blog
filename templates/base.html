@@ -80,6 +80,18 @@
             <li class="nav-item active">
                 <a class="nav-link" href="{{url_for('about')}}">关于xinren</a>
             </li>
+            {% if request.cookies.get('token') %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{url_for('logout')}}">登出</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{url_for('login')}}">登录</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{url_for('signup')}}">注册</a>
+            </li>
+            {% endif %}
             </ul>
         </div>
     </nav>
