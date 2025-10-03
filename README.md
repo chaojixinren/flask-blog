@@ -33,7 +33,7 @@
 
 1. 克隆项目到本地：
    ```
-   git clone <项目地址>
+   git clone https://github.com/chaojixinren/mysql-blog.git
    cd mysql-blog
    ```
 
