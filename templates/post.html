@@ -1,17 +1,31 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
-    <h2>{{ post['title'] }}</h2>
-    <span class="badge badge-primary">{{ post['created'] }}</span>
-    {% if request.cookies.get('token') %}
-    <a href="{{ url_for('edit', id=post['id']) }}">
-        <span class="badge badge-warning">编辑</span>
+<article class="card post-card">
+  <div class="card-header">
+    <span class="section-eyebrow">READING TIME</span>
+    <h1 class="post-title mb-1">{% block title %}{{ post['title'] }}{% endblock %}</h1>
+    <div class="post-meta mt-2">
+      <span class="badge badge-primary">
+        <i class="far fa-calendar-alt"></i>{{ post['created'] }}
+      </span>
+      {% if request.cookies.get('token') %}
+      <a href="{{ url_for('edit', id=post['id']) }}" class="badge badge-warning">
+        <i class="fas fa-edit"></i> 编辑
+      </a>
+      <form method="POST" action="{{ url_for('delete', id=post['id']) }}" class="d-inline">
+        <input type="submit" value="删除" class="btn btn-danger btn-sm ml-2" onclick="return confirm('确定要删除这篇文章吗？')">
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="post-content rich-text">
+      {{ post['content'] }}
+    </div>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary mt-4">
+      <i class="fas fa-arrow-left"></i> 返回首页
     </a>
-    <form method="POST" action="{{ url_for('delete', id=post['id']) }}" style="display:inline;">
-        <input type="submit" value="删除" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这篇文章吗？')">
-    </form>
-    {% endif %}
-    <hr>
-    <p>{{ post['content'] }}</p>
-    <a href="{{ url_for('index') }}">返回首页</a>
+  </div>
+</article>
 {% endblock %}

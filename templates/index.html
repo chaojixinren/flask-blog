@@ -1,37 +1,78 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} 欢迎来看xinren的博客 {% endblock %}</h1>
-    <script src="{{url_for('static', filename='js/titleanimation.js')}}"></script>
-    {% for post in posts %}
+<section class="hero">
+  <div class="hero-content">
+    <span class="hero-eyebrow">INSPIRE / BUILD / SHARE</span>
+    <h1 class="hero-title">{% block title %}欢迎来到超級の新人的博客{% endblock %}</h1>
+    <p class="hero-lead">记录灵感、复盘成长、分享技术与生活的点滴。</p>
+    <div class="hero-typed" id="hero-typed"></div>
+    <div class="hero-actions">
+      {% if request.cookies.get('token') %}
+      <a href="{{ url_for('new') }}" class="btn btn-primary"><i class="fas fa-pen-nib"></i> 写下新想法</a>
+      {% else %}
+      <a href="{{ url_for('signup') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> 加入博客</a>
+      <a href="{{ url_for('login') }}" class="btn btn-outline-primary"><i class="fas fa-sign-in-alt"></i> 立即登录</a>
+      {% endif %}
+      <a href="#posts" class="btn btn-secondary"><i class="fas fa-compass"></i> 浏览最新</a>
+    </div>
+  </div>
+</section>
 
-    <!-- Element to contain animated typing -->
-    <span id="element"></span>
-    <!-- Load library from the CDN -->
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
-    <!-- Setup and start animation! -->
-    <script>
-    var typed = new Typed('#element', {
-        strings: ['欢迎来到超級の新人的博客━(*｀∀´*)ノ亻!| '],
-        typeSpeed: 100,
-    });
-    </script>
-    <style>
-    #element {
-        color: white;
-        font-size: 20px;
+<section id="posts" class="post-grid">
+  {% for post in posts %}
+  <article class="card post-card">
+    <div class="card-body">
+      <h2 class="post-title">
+        <i class="fas fa-file-alt"></i>
+        <a href="{{ url_for('post', post_id=post['id']) }}">{{ post['title'] }}</a>
+      </h2>
+      <div class="post-meta">
+        <span class="badge badge-primary">
+          <i class="far fa-calendar-alt"></i>{{ post['created'] }}
+        </span>
+        {% if request.cookies.get('token') %}
+        <a href="{{ url_for('edit', id=post['id']) }}" class="badge badge-warning">
+          <i class="fas fa-edit"></i> 编辑
+        </a>
+        {% endif %}
+      </div>
+      <p class="post-excerpt">{{ post['content'][:140] }}{% if post['content']|length > 140 %}...{% endif %}</p>
+      <a href="{{ url_for('post', post_id=post['id']) }}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-book-open"></i> 阅读全文
+      </a>
+    </div>
+  </article>
+  {% else %}
+  <article class="card">
+    <div class="card-body empty-state">
+      <i class="fas fa-feather-alt fa-2x mb-3 text-muted"></i>
+      <p class="mb-1">这里暂时还没有文章。</p>
+      <p class="text-muted mb-4">率先写下第一篇，让故事从你开始。</p>
+      {% if request.cookies.get('token') %}
+      <a href="{{ url_for('new') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> 发布文章</a>
+      {% endif %}
+    </div>
+  </article>
+  {% endfor %}
+</section>
+
+<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var target = document.querySelector('#hero-typed');
+    if (target && window.Typed) {
+      new Typed('#hero-typed', {
+        strings: [
+          '欢迎来到超級の新人的blog.(ﾉ"◑ ◑)ﾉ"(｡•́︿•̀｡)'
+        ],
+        typeSpeed: 70,
+        backSpeed: 40,
+        backDelay: 2200,
+        smartBackspace: false,
+        loop: true
+      });
     }
-    </style>
-
-    <a href="{{url_for('post', post_id=post['id'])}}">
-        <h2>{{ post['title'] }}</h2>
-    </a>
-    <span class="badge badge-primary">{{ post['created'] }}</span>
-    {% if request.cookies.get('token') %}
-    <a href="{{ url_for('edit', id=post['id']) }}">
-        <span class="badge badge-warning">编辑</span>
-    </a>
-    {% endif %}
-    <hr>
-    {% endfor %}
+  });
+</script>
 {% endblock %}

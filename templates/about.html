@@ -1,11 +1,47 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
-<h1>{% block title %} 关于blog {% endblock %}</h1>
+<section class="card">
+  <div class="card-body">
+    <span class="section-eyebrow">ABOUT THIS SPACE</span>
+    <h1 class="mb-2">{% block title %}关于超級の新人的博客{% endblock %}</h1>
+    <p class="section-lead">这是一个由 Flask + MySQL 驱动的轻量级博客应用，记录创作与技术实践，让每一次思考都有归属。</p>
 
-<p> 本博客由chaojixinren搭建 </p>
+    <div class="mt-3">
+      <span class="stat-pill"><i class="fas fa-calendar-check"></i> 成立于 2025</span>
+    </div>
 
+    <div class="feature-grid mt-4">
+      <article class="feature-card">
+        <i class="fab fa-python"></i>
+        <h6>后端架构</h6>
+        <p>使用 Python Flask + MySQL 打造稳定可靠的内容管理。</p>
+      </article>
+      <article class="feature-card">
+        <i class="fas fa-pencil-ruler"></i>
+        <h6>前端体验</h6>
+        <p>高级玻璃拟态与响应式设计，为内容营造沉浸氛围。</p>
+      </article>
+      <article class="feature-card">
+        <i class="fas fa-lock"></i>
+        <h6>安全登录</h6>
+        <p>基于 JWT 的身份认证，保障创作者的账户与内容安全。</p>
+      </article>
+    </div>
+
+    <div class="info-banner mt-4">
+      <i class="fas fa-bullseye"></i>
+      <span>博客聚焦于技术分享和生活记录，鼓励真实表达与高质量创作。欢迎加入，与更多热爱创作的人交流灵感。</span>
+    </div>
+
+    <div class="auth-meta mt-4">
+      <span class="highlight-badge"><i class="fas fa-heart"></i> 创作理念</span>
+      <ul>
+        <li>保持持续输出，用内容记录成长轨迹。</li>
+        <li>关注交互质感，让体验与文字同样动人。</li>
+        <li>用开放的心态拥抱社区与新技术。</li>
+      </ul>
+    </div>
+  </div>
+</section>
 {% endblock %}
-
-
-

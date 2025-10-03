@@ -1,36 +1,44 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card bg-dark text-white mt-5">
-            <div class="card-header text-center">
-                <h3>{% block title %} 请注册账号 {% endblock %}</h3>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    <div class="form-group">
-                        <label for="name">用户名</label>
-                        <input type="text" class="form-control" id="name" name="name" required placeholder="请输入用户名">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">邮箱</label>
-                        <input type="email" class="form-control" id="email" name="email" required placeholder="请输入邮箱">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">密码</label>
-                        <input type="password" class="form-control" id="password" name="password" required placeholder="请输入密码">
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-block">注册</button>
-                </form>
-                <div class="text-center mt-3">
-                    <p>已有账号？<a href="{{ url_for('login') }}">立即登录</a></p>
-                </div>
-            </div>
-        </div>
+<section class="auth-shell">
+  <div class="auth-card">
+    <span class="section-eyebrow">CREATE / CONNECT</span>
+    <h1 class="mb-1">{% block title %}注册账号{% endblock %}</h1>
+    <p>加入超級の新人博客，开始发布你的灵感与见解。简单三步即可完成注册。</p>
+    <form method="post" class="mt-4">
+      <div class="form-group">
+        <label for="name">用户名</label>
+        <input type="text" class="form-control" id="name" name="name" required placeholder="请输入用户名">
+      </div>
+      <div class="form-group mt-4">
+        <label for="email">邮箱</label>
+        <input type="email" class="form-control" id="email" name="email" required placeholder="请输入邮箱">
+      </div>
+      <div class="form-group mt-4">
+        <label for="password">密码</label>
+        <input type="password" class="form-control" id="password" name="password" required placeholder="请输入密码">
+      </div>
+      <div class="form-actions mt-4">
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> 返回登录
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-user-plus"></i> 创建账号
+        </button>
+      </div>
+    </form>
+  </div>
+  <aside class="info-card">
+    <div class="auth-meta">
+      <span class="highlight-badge"><i class="fas fa-star"></i> 博客理念</span>
+      <ul>
+        <li>发布文章、记录灵感、沉淀知识体系。</li>
+        <li>轻松管理内容，随时编辑与删除。</li>
+        <li>响应式体验，让你的作品在任意设备保持高级感。</li>
+      </ul>
     </div>
-</div>
+  </aside>
+</section>
 {% endblock %}
+

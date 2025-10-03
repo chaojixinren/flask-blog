@@ -1,29 +1,38 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card bg-dark text-white mt-5">
-            <div class="card-header text-center">
-                <h3>{% block title %} 用户登录 {% endblock %}</h3>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    <div class="form-group">
-                        <label for="email">邮箱</label>
-                        <input type="email" class="form-control" id="email" name="email" required placeholder="请输入邮箱">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">密码</label>
-                        <input type="password" class="form-control" id="password" name="password" required placeholder="请输入密码">
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block">登录</button>
-                </form>
-                <div class="text-center mt-3">
-                    <p>还没有账号？<a href="{{ url_for('signup') }}">立即注册</a></p>
-                </div>
-            </div>
-        </div>
+<section class="auth-shell">
+  <div class="auth-card">
+    <span class="section-eyebrow">WELCOME BACK</span>
+    <h1 class="mb-1">{% block title %}用户登录{% endblock %}</h1>
+    <p>登录账号，继续记录与探索。我们已为你保留所有草稿与灵感。</p>
+    <form method="post" class="mt-4">
+      <div class="form-group">
+        <label for="email">邮箱</label>
+        <input type="email" class="form-control" id="email" name="email" required placeholder="请输入邮箱">
+      </div>
+      <div class="form-group mt-4">
+        <label for="password">密码</label>
+        <input type="password" class="form-control" id="password" name="password" required placeholder="请输入密码">
+      </div>
+      <div class="form-actions mt-4">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-sign-in-alt"></i> 登录账号
+        </button>
+      </div>
+    </form>
+    <p class="auth-footnote mt-4">还没有账号？<a href="{{ url_for('signup') }}">立即注册</a></p>
+  </div>
+  <aside class="info-card">
+    <div class="auth-meta">
+      <span class="highlight-badge"><i class="fas fa-shield-alt"></i> 安全加密</span>
+      <p>xinren 博客使用 JWT 登录保持轻量安全，支持 30 天内免重复登录。</p>
+      <ul>
+        <li>登录后即可发表、编辑、删除属于你的文章。</li>
+        <li>支持多端访问，响应式布局在手机也拥有高级质感。</li>
+        <li>随时退出，个人隐私与数据安全有保障。</li>
+      </ul>
     </div>
-</div>
+  </aside>
+</section>
 {% endblock %}
