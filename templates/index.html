@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{% block title %} 欢迎来看xinren的博客 {% endblock %}</h1>
+    <script src="{{url_for('static', filename='js/titleanimation.js')}}"></script>
+    {% for post in posts %}
+
+    <!-- Element to contain animated typing -->
+    <span id="element"></span>
+    <!-- Load library from the CDN -->
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <!-- Setup and start animation! -->
+    <script>
+    var typed = new Typed('#element', {
+        strings: ['欢迎来到超級の新人的博客━(*｀∀´*)ノ亻!| '],
+        typeSpeed: 100,
+    });
+    </script>
+    <style>
+    #element {
+        color: white;
+        font-size: 20px;
+    }
+    </style>
+
+    <a href="{{url_for('post', post_id=post['id'])}}">
+        <h2>{{ post['title'] }}</h2>
+    </a>
+    <span class="badge badge-primary">{{ post['created'] }}</span>
+    <a href="{{ url_for('edit', id=post['id']) }}">
+        <span class="badge badge-warning">编辑</span>
+    </a>
+    <hr>
+    {% endfor %}
+{% endblock %}
