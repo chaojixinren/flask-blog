@@ -283,7 +283,7 @@ def login():
     
     return render_template('login.html')
 
-# 登出
+
 @app.route('/logout')
 def logout():
     response = make_response(redirect(url_for('index')))
