@@ -35,7 +35,7 @@ def get_post(post_id):
         conn = get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute('SELECT * FROM posts WHERE id = %s', (post_id,))
+                cursor.execute('SELECT p.id, p.created, p.title, p.content, p.author_id, u.name as author_name FROM posts p LEFT JOIN user u ON p.author_id = u.id WHERE p.id = %s', (post_id,))
                 post = cursor.fetchone()
                 return post
         finally:
@@ -77,6 +77,8 @@ def token_required(f):
             flash('无效的登录信息，请重新登录!')
             return redirect(url_for('login'))
         
+        # 将用户ID添加到请求上下文中
+        request.current_user_id = current_user['id']
         return f(current_user, *args, **kwargs)
     
     return decorated
@@ -87,7 +89,7 @@ def index():
         conn = get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute('SELECT * FROM posts ORDER BY created DESC')
+                cursor.execute('SELECT p.id, p.created, p.title, p.content, p.author_id, u.name as author_name FROM posts p LEFT JOIN user u ON p.author_id = u.id ORDER BY created DESC')
                 posts = cursor.fetchall()
                 return render_template('index.html', posts=posts)
         finally:
@@ -126,8 +128,8 @@ def new(current_user):
                 conn = get_db_connection()
                 try:
                     with conn.cursor() as cursor:
-                        cursor.execute('INSERT INTO posts (title, content) VALUES (%s, %s)',
-                                     (title, content))
+                        cursor.execute('INSERT INTO posts (title, content, author_id) VALUES (%s, %s, %s)',
+                                     (title, content, current_user['id']))
                         conn.commit()
                     return redirect(url_for('index'))
                 finally:
@@ -146,6 +148,11 @@ def edit(current_user, id):
         
         if post is None:
             flash('文章不存在!')
+            return redirect(url_for('index'))
+        
+        # 检查当前用户是否是文章作者
+        if post['author_id'] != current_user['id']:
+            flash('您没有权限编辑这篇文章!')
             return redirect(url_for('index'))
     except Exception as e:
         flash(f"数据库错误: {e}")
@@ -183,6 +190,11 @@ def delete(current_user, id):
         
         if post is None:
             flash('文章不存在!')
+            return redirect(url_for('index'))
+        
+        # 检查当前用户是否是文章作者
+        if post['author_id'] != current_user['id']:
+            flash('您没有权限删除这篇文章!')
             return redirect(url_for('index'))
             
         conn = get_db_connection()
@@ -252,35 +264,31 @@ def login():
         email = request.form['email']
         password = request.form['password']
         
-        if not email or not password:
-            flash('请输入邮箱和密码!')
-        else:
+        try:
+            conn = get_db_connection()
             try:
-                conn = get_db_connection()
-                try:
-                    with conn.cursor() as cursor:
-                        # 查找用户
-                        cursor.execute('SELECT id, public_id, name, email, password FROM user WHERE email = %s', (email,))
-                        user = cursor.fetchone()
-                        
-                        if user and check_password_hash(user['password'], password):
-                            # 生成JWT token
-                            token = jwt.encode({
-                                'public_id': user['public_id'],
-                                'exp': datetime.utcnow() + timedelta(days=30)
-                            }, app.secret_key, algorithm='HS256')
-                            
-                            # 设置cookie
-                            response = make_response(redirect(url_for('index')))
-                            response.set_cookie('token', token, httponly=True)
-                            return response
-                        else:
-                            flash('邮箱或密码错误!')
-                finally:
-                    conn.close()
-            except Exception as e:
-                flash(f'登录失败: {e}')
-    
+                with conn.cursor() as cursor:
+                    cursor.execute('SELECT * FROM user WHERE email = %s', (email,))
+                    user = cursor.fetchone()
+            finally:
+                conn.close()
+                
+            if user and check_password_hash(user['password'], password):
+                # 生成JWT Token
+                token = jwt.encode({
+                    'public_id': user['public_id'],
+                    'exp': datetime.utcnow() + timedelta(days=30)
+                }, app.secret_key, algorithm='HS256')
+                
+                response = make_response(redirect(url_for('index')))
+                response.set_cookie('token', token, httponly=True, max_age=30*24*60*60)
+                response.set_cookie('user_id', str(user['id']), max_age=30*24*60*60)  # 添加用户ID到cookie
+                return response
+            else:
+                flash('邮箱或密码错误!')
+        except Exception as e:
+            flash(f"登录时发生错误: {e}")
+            
     return render_template('login.html')
 
 
@@ -288,7 +296,8 @@ def login():
 def logout():
     response = make_response(redirect(url_for('index')))
     response.set_cookie('token', '', expires=0)
-    flash('您已成功登出!')
+    response.set_cookie('user_id', '', expires=0)  # 清除用户ID cookie
+    flash('您已成功退出登录!')
     return response
 
 if __name__ == '__main__':

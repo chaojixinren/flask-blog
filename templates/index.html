@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <section class="hero">
@@ -31,7 +31,12 @@
         <span class="badge badge-primary">
           <i class="far fa-calendar-alt"></i>{{ post['created'] }}
         </span>
-        {% if request.cookies.get('token') %}
+        {% if post['author_name'] %}
+        <span class="badge badge-secondary">
+          <i class="fas fa-user"></i> {{ post['author_name'] }}
+        </span>
+        {% endif %}
+        {% if request.cookies.get('token') and request.cookies.get('user_id') and post['author_id'] == request.cookies.get('user_id')|int %}
         <a href="{{ url_for('edit', id=post['id']) }}" class="badge badge-warning">
           <i class="fas fa-edit"></i> 编辑
         </a>
@@ -64,7 +69,7 @@
     if (target && window.Typed) {
       new Typed('#hero-typed', {
         strings: [
-          '昔坠凡尘紛俗繞，喧街幽巷复徘徊。莫恐孤路無時尽，空庭独醉自豪杰。(ﾉ"◑ ◑)ﾉ"(｡•́︿•̀｡)'
+          '昔坠凡尘紛俗繞，喧街幽巷复徘徊。莫恐孤路無時尽，空庭独醉自豪杰。'
         ],
         typeSpeed: 70,
         backSpeed: 40,
