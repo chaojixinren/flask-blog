@@ -100,3 +100,15 @@ python blog.py
 - 依赖缺失：确认虚拟环境已激活并执行过 `pip install` 命令。
 - 模板或静态资源加载失败：确保以项目根目录为工作路径启动应用，Flask 会自动定位 `templates` 与 `static`。
 
+## TODO列表（25.10.07）
+- 文章评论、点赞系统
+- 邮件验证、密码重置
+- 全文搜索
+- 文件上传与CDN
+
+## 进阶目标
+- 将flask改造成纯API后端，移除jinja2模板，使用vue3.js作为前端，使用前后端分离的开发模式
+- 学习编写Dockerfile，将项目容器化
+- 用go语言+gin重写后端
+
+* by [chaojixinren](https://github.com/chaojixinren)
