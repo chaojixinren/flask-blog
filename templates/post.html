@@ -68,7 +68,7 @@
         <div class="card mb-3">
           <div class="card-body">
             <p class="card-text">{{ comment['content'] }}</p>
-            <div class="comment-meta">
+            <div class="comment-meta d-flex justify-content-between">
               <small class="text-muted">
                 {% if comment['author_name'] %}
                 由 {{ comment['author_name'] }} 发表于 {{ comment['created'] }}
@@ -76,6 +76,14 @@
                 匿名用户 发表于 {{ comment['created'] }}
                 {% endif %}
               </small>
+              <!-- 删除评论按钮 -->
+              {% if request.cookies.get('token') and request.cookies.get('user_id') %}
+                {% if comment['author_id'] == request.cookies.get('user_id')|int or post['author_id'] == request.cookies.get('user_id')|int %}
+                <form method="POST" action="{{ url_for('delete_comment', post_id=post['id'], comment_id=comment['id']) }}" class="d-inline">
+                  <input type="submit" value="删除" class="btn btn-danger btn-sm" onclick="return confirm('确定要删除这条评论吗？')">
+                </form>
+                {% endif %}
+              {% endif %}
             </div>
           </div>
         </div>

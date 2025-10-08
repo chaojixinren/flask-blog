@@ -429,5 +429,42 @@ def toggle_like(current_user, post_id):
     
     return redirect(url_for('post', post_id=post_id))
 
+
+# 删除评论路由
+@app.route('/posts/<int:post_id>/comments/<int:comment_id>/delete', methods=['POST'])
+@token_required
+def delete_comment(current_user, post_id, comment_id):
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # 获取评论信息，包括作者和关联的文章
+                cursor.execute('''SELECT c.id, c.author_id, c.post_id, p.author_id as post_author_id
+                                 FROM comments c 
+                                 JOIN posts p ON c.post_id = p.id
+                                 WHERE c.id = %s AND c.post_id = %s''', (comment_id, post_id))
+                comment = cursor.fetchone()
+                
+                if comment is None:
+                    flash('评论不存在!')
+                    return redirect(url_for('post', post_id=post_id))
+                
+                # 检查权限：只有评论作者或文章作者可以删除评论
+                if comment['author_id'] != current_user['id'] and comment['post_author_id'] != current_user['id']:
+                    flash('您没有权限删除此评论!')
+                    return redirect(url_for('post', post_id=post_id))
+                
+                # 删除评论
+                cursor.execute('DELETE FROM comments WHERE id = %s', (comment_id,))
+                conn.commit()
+                flash('评论删除成功!')
+        finally:
+            conn.close()
+    except Exception as e:
+        flash(f'删除评论失败: {e}')
+    
+    return redirect(url_for('post', post_id=post_id))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
