@@ -28,6 +28,64 @@
     <div class="post-content rich-text">
       {{ post['content'] }}
     </div>
+    
+    <!-- 点赞功能 -->
+    <div class="mt-4">
+      <form method="POST" action="{{ url_for('toggle_like', post_id=post['id']) }}" class="d-inline">
+        {% if user_has_liked %}
+        <button type="submit" class="btn btn-danger">
+          <i class="fas fa-heart"></i> 取消点赞 ({{ like_count }})
+        </button>
+        {% else %}
+        <button type="submit" class="btn btn-outline-danger">
+          <i class="far fa-heart"></i> 点赞 ({{ like_count }})
+        </button>
+        {% endif %}
+      </form>
+    </div>
+    
+    <!-- 评论功能 -->
+    <div class="mt-4">
+      <h3>评论 ({{ comments|length }})</h3>
+      
+      <!-- 评论表单 -->
+      {% if request.cookies.get('token') %}
+      <form method="POST" action="{{ url_for('add_comment', post_id=post['id']) }}" class="mb-4">
+        <div class="form-group">
+          <label for="comment-content">添加评论</label>
+          <textarea class="form-control" id="comment-content" name="content" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">发表评论</button>
+      </form>
+      {% else %}
+      <p><a href="{{ url_for('login') }}">登录</a> 后可以发表评论</p>
+      {% endif %}
+      
+      <!-- 评论列表 -->
+      {% if comments %}
+      <div class="comments-list">
+        {% for comment in comments %}
+        <div class="card mb-3">
+          <div class="card-body">
+            <p class="card-text">{{ comment['content'] }}</p>
+            <div class="comment-meta">
+              <small class="text-muted">
+                {% if comment['author_name'] %}
+                由 {{ comment['author_name'] }} 发表于 {{ comment['created'] }}
+                {% else %}
+                匿名用户 发表于 {{ comment['created'] }}
+                {% endif %}
+              </small>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p>还没有评论，快来抢沙发吧！</p>
+      {% endif %}
+    </div>
+    
     <a href="{{ url_for('index') }}" class="btn btn-secondary mt-4">
       <i class="fas fa-arrow-left"></i> 返回首页
     </a>

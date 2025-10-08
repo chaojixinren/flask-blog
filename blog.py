@@ -44,6 +44,55 @@ def get_post(post_id):
         print(f"获取文章时出错: {e}")
         return None
 
+# 获取文章的所有评论
+def get_post_comments(post_id):
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute('''SELECT c.id, c.created, c.content, c.author_id, u.name as author_name 
+                                 FROM comments c 
+                                 LEFT JOIN user u ON c.author_id = u.id 
+                                 WHERE c.post_id = %s 
+                                 ORDER BY c.created ASC''', (post_id,))
+                comments = cursor.fetchall()
+                return comments
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"获取评论时出错: {e}")
+        return []
+
+# 检查用户是否已经点赞了某篇文章
+def has_user_liked_post(user_id, post_id):
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute('SELECT COUNT(*) as count FROM likes WHERE user_id = %s AND post_id = %s', (user_id, post_id))
+                result = cursor.fetchone()
+                return result['count'] > 0
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"检查点赞状态时出错: {e}")
+        return False
+
+# 获取文章点赞数
+def get_post_likes_count(post_id):
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute('SELECT COUNT(*) as count FROM likes WHERE post_id = %s', (post_id,))
+                result = cursor.fetchone()
+                return result['count']
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"获取点赞数时出错: {e}")
+        return 0
+
 # JWT认证装饰器
 def token_required(f):
     @wraps(f)
@@ -91,6 +140,16 @@ def index():
             with conn.cursor() as cursor:
                 cursor.execute('SELECT p.id, p.created, p.title, p.content, p.author_id, u.name as author_name FROM posts p LEFT JOIN user u ON p.author_id = u.id ORDER BY created DESC')
                 posts = cursor.fetchall()
+                # 为每篇文章获取评论数和点赞数
+                for post in posts:
+                    cursor.execute('SELECT COUNT(*) as comment_count FROM comments WHERE post_id = %s', (post['id'],))
+                    comment_result = cursor.fetchone()
+                    post['comment_count'] = comment_result['comment_count']
+                    
+                    cursor.execute('SELECT COUNT(*) as like_count FROM likes WHERE post_id = %s', (post['id'],))
+                    like_result = cursor.fetchone()
+                    post['like_count'] = like_result['like_count']
+                
                 return render_template('index.html', posts=posts)
         finally:
             conn.close()
@@ -106,7 +165,21 @@ def post(post_id):
         if post is None:
             flash('文章不存在!')
             return redirect(url_for('index'))
-        return render_template('post.html', post=post)
+        
+        # 获取评论
+        comments = get_post_comments(post_id)
+        
+        # 获取点赞信息
+        like_count = get_post_likes_count(post_id)
+        
+        # 检查当前用户是否已点赞（如果已登录）
+        user_has_liked = False
+        user_id = request.cookies.get('user_id')
+        if user_id:
+            user_has_liked = has_user_liked_post(int(user_id), post_id)
+        
+        return render_template('post.html', post=post, comments=comments, 
+                              like_count=like_count, user_has_liked=user_has_liked)
     except Exception as e:
         flash(f"数据库错误: {e}")
         return redirect(url_for('index'))
@@ -299,6 +372,62 @@ def logout():
     response.set_cookie('user_id', '', expires=0)  # 清除用户ID cookie
     flash('您已成功退出登录!')
     return response
+
+# 添加评论路由
+@app.route('/posts/<int:post_id>/comment', methods=['POST'])
+@token_required
+def add_comment(current_user, post_id):
+    content = request.form.get('content')
+    
+    if not content:
+        flash('评论内容不能为空!')
+        return redirect(url_for('post', post_id=post_id))
+    
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute('INSERT INTO comments (content, author_id, post_id) VALUES (%s, %s, %s)',
+                             (content, current_user['id'], post_id))
+                conn.commit()
+            flash('评论成功!')
+        finally:
+            conn.close()
+    except Exception as e:
+        flash(f'评论失败: {e}')
+    
+    return redirect(url_for('post', post_id=post_id))
+
+# 点赞/取消点赞路由
+@app.route('/posts/<int:post_id>/like', methods=['POST'])
+@token_required
+def toggle_like(current_user, post_id):
+    try:
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # 检查是否已经点赞
+                cursor.execute('SELECT id FROM likes WHERE user_id = %s AND post_id = %s', 
+                             (current_user['id'], post_id))
+                existing_like = cursor.fetchone()
+                
+                if existing_like:
+                    # 如果已经点赞，则取消点赞
+                    cursor.execute('DELETE FROM likes WHERE id = %s', (existing_like['id'],))
+                    conn.commit()
+                    flash('已取消点赞!')
+                else:
+                    # 如果尚未点赞，则添加点赞
+                    cursor.execute('INSERT INTO likes (user_id, post_id) VALUES (%s, %s)', 
+                                 (current_user['id'], post_id))
+                    conn.commit()
+                    flash('点赞成功!')
+        finally:
+            conn.close()
+    except Exception as e:
+        flash(f'操作失败: {e}')
+    
+    return redirect(url_for('post', post_id=post_id))
 
 if __name__ == '__main__':
     app.run(debug=True)
